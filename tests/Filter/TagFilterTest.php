@@ -316,7 +316,6 @@ class TagFilterTest extends FilterTestCase
         ];
 
         yield 'matches outline & one example table' => [
-            // @todo: Existing test doesn't strictly prove that the @etag3 *only* matches in combination with the @wip...
             FeatureFilterTestFixture::fromCommentedExpectation(
                 <<<'GHERKIN'
                 @feature-tag
@@ -334,17 +333,31 @@ class TagFilterTest extends FilterTestCase
                     @etag2 @etag3
                     Examples: Second set of examples
                       | something | 
-                      | else      |     
+                      | else      |
+                      
+                #  @other-scenario
+                #  Scenario Outline: Scenario that does not match
+                #    Given <something>
+                #    
+                #    @etag1 @etag2
+                #    Examples: First set of examples
+                #      | something | 
+                #      | here      |
+                #      
+                #    @etag2 @etag3
+                #    Examples: Second set of examples
+                #      | something | 
+                #      | else      |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Things are implemented' => true,
+                    'Scenario that does not match' => false,
                 ],
             ),
             '@wip && @etag3',
         ];
 
         yield 'matches feature, outline, and table' => [
-            // @todo: Existing test doesn't strictly prove that the @etag3 *only* matches in combination with the @wip...
             FeatureFilterTestFixture::fromCommentedExpectation(
                 <<<'GHERKIN'
                 @feature-tag
@@ -362,10 +375,26 @@ class TagFilterTest extends FilterTestCase
                 #    @etag2 @etag3
                 #    Examples: Second set of examples
                 #      | something | 
-                #      | else      |     
+                #      | else      |
+
+                #  @other-scenario
+                #  Scenario Outline: Scenario that does not match
+                #    Given <something>
+                #    
+                #    @etag1 @etag2
+                #    Examples: First set of examples
+                #      | something | 
+                #      | here      |
+                #      
+                #    @etag2 @etag3
+                #    Examples: Second set of examples
+                #      | something | 
+                #      | else      |
+
                 GHERKIN,
                 expectScenarioMatches: [
                     'Things are implemented' => true,
+                    'Scenario that does not match' => false,
                 ],
             ),
             '@feature-tag && @etag1 && @wip',
@@ -450,6 +479,36 @@ class TagFilterTest extends FilterTestCase
                 ],
             ),
             '@feature-tag && @etag2',
+        ];
+
+        yield 'drops Outlines where no Examples match' => [
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                @feature-tag
+                Feature: Some work in progress
+                
+                  @scenario-tag
+                  Scenario: Matches filter
+
+                #  Scenario Outline: Things are implemented
+                #    Given <something>
+                #    
+                #    @etag1
+                #    Examples: First set of examples
+                #      | something | 
+                #      | here      |
+                #      
+                #    @etag1
+                #    Examples: Second set of examples
+                #      | something | 
+                #      | else      |     
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Matches filter' => true,
+                    'Things are implemented' => false,
+                ],
+            ),
+            '@scenario-tag',
         ];
 
         yield 'matches all example tables across multiple Outlines' => [
