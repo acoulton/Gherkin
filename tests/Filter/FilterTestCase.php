@@ -20,6 +20,7 @@ use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Parser;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use UnexpectedValueException;
 
 abstract class FilterTestCase extends TestCase
 {
@@ -48,7 +49,13 @@ abstract class FilterTestCase extends TestCase
         // anything that was commented in the expected feature has been properly uncommented).
         $actualScenarioMatches = [];
         foreach ($originalFeature->getScenarios() as $scenario) {
-            $actualScenarioMatches[$scenario->getTitle()] = match (true) {
+            $title = $scenario->getTitle() ?? '';
+
+            if (isset($actualScenarioMatches[$title])) {
+                throw new UnexpectedValueException('Duplicate scenario title in test data: ' . $title);
+            }
+
+            $actualScenarioMatches[$scenario->getTitle() ?? ''] = match (true) {
                 $filter instanceof FilterInterface => $filter->isScenarioMatch($scenario),
                 $filter instanceof ComplexFilterInterface => $filter->isScenarioMatch($originalFeature, $scenario),
                 default => throw new RuntimeException('Unknown filter type'),
