@@ -128,38 +128,60 @@ class LineFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #   Given initial step
-                4 : #   When action occurs
-                5 : #   Then outcomes should be visible
-                6 : #
-                7 : # Scenario: Scenario#2
-                8 : #   Given initial step
-                9 : #   And another initial step
-                10: #   When action occurs
-                11: #   Then outcomes should be visible
-                12:
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16:
-                17:    @etag1
-                18:    Examples:
-                19:      | action | outcome |
-                20:      | act#1  | out#1   |
-                21:      | act#2  | out#2   |
-                22:
-                23:    @etag2
-                24:    Examples:
-                25:      | action | outcome |
-                26:      | act#3  | out#3   |
+                4 :
+                5 :   Scenario Outline: Scenario#2
+                6 :     When <action> occurs
+                8 :
+                9 :     @etag1
+                10:     Examples:
+                11:       | action |
+                12:       | act#1  |
+                13:       | act#2  |
+                14:
+                15:    @etag2
+                16:    Examples:
+                17:      | action |
+                18:      | act#3  |
+                19:      | act#4  |
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Scenario#1' => false,
+                    'Scenario#2' => true,
+                ],
+                stripLineNumbers: true,
+            ),
+            5,
+        ];
+
+        yield 'feature with outline, matches a step in the Outline (matches nothing)' => [
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                1 : Feature: Long feature with outline
+                2 : #  Scenario: Scenario#1
+                3 : #   Given initial step
+                4 :
+                5 : #  Scenario Outline: Scenario#2
+                6 : #    When <action> occurs
+                7 : #
+                8 : #    @etag1
+                9 : #    Examples:
+                10: #      | action |
+                11: #      | act#1  |
+                12: #      | act#2  |
+                13: #
+                14: #   @etag2
+                15: #   Examples:
+                16: #     | action |
+                17: #     | act#3  |
+                18: #     | act#4  |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
                     'Scenario#2' => false,
-                    'Scenario#3' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            13,
+            6,
         ];
 
         yield 'feature with outline, matches one line in Example table' => [
@@ -168,38 +190,29 @@ class LineFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #   Given initial step
-                4 : #   When action occurs
-                5 : #   Then outcomes should be visible
-                6 : #
-                7 : # Scenario: Scenario#2
-                8 : #   Given initial step
-                9 : #   And another initial step
-                10: #   When action occurs
-                11: #   Then outcomes should be visible
-                12:
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16:
-                17:    @etag1
-                18:    Examples:
-                19:      | action | outcome |
-                20:      | act#1  | out#1   |
-                21: #     | act#2  | out#2   |
-                22:
-                23: #   @etag2
-                24: #   Examples:
-                25: #     | action | outcome |
-                26: #     | act#3  | out#3   |
+                4 :
+                5 :   Scenario Outline: Scenario#2
+                6 :     When <action> occurs
+                7 :
+                8 :     @etag1
+                9 :     Examples:
+                10:       | action |
+                11: #     | act#1  |
+                12:       | act#2  |
+                13:
+                14: #  @etag2
+                15: #  Examples:
+                16: #    | action |
+                17: #    | act#3  |
+                18: #    | act#4  |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Scenario#2' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            20,
+            12,
         ];
 
         yield 'feature with outline, matches different line in Example table' => [
@@ -208,38 +221,29 @@ class LineFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #   Given initial step
-                4 : #   When action occurs
-                5 : #   Then outcomes should be visible
-                6 : #
-                7 : # Scenario: Scenario#2
-                8 : #   Given initial step
-                9 : #   And another initial step
-                10: #   When action occurs
-                11: #   Then outcomes should be visible
-                12:
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16:
-                17: #   @etag1
-                18: #   Examples:
-                19: #     | action | outcome |
-                20: #     | act#1  | out#1   |
-                21: #     | act#2  | out#2   |
-                22:
-                23:    @etag2
-                24:    Examples:
-                25:      | action | outcome |
-                26:      | act#3  | out#3   |
+                4 :
+                5 :   Scenario Outline: Scenario#2
+                6 :     When <action> occurs
+                7 :
+                8 : #   @etag1
+                9 : #   Examples:
+                10: #     | action |
+                11: #     | act#1  |
+                12: #     | act#2  |
+                13:
+                14:    @etag2
+                15:    Examples:
+                16:      | action |
+                17:      | act#3  |
+                18: #    | act#4  |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Scenario#2' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            26,
+            17,
         ];
 
         yield 'feature with outline, matches one Example table header (parses as empty table, matches Scenario)' => [
@@ -248,38 +252,49 @@ class LineFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #   Given initial step
-                4 : #   When action occurs
-                5 : #   Then outcomes should be visible
-                6 : #
-                7 : # Scenario: Scenario#2
-                8 : #   Given initial step
-                9 : #   And another initial step
-                10: #   When action occurs
-                11: #   Then outcomes should be visible
-                12:
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16:
-                17:    @etag1
-                18:    Examples:
-                19:      | action | outcome |
-                20: #     | act#1  | out#1   |
-                21: #     | act#2  | out#2   |
-                22: #
-                23: #   @etag2
-                24: #   Examples:
-                25: #     | action | outcome |
-                26: #     | act#3  | out#3   |
+                4 :
+                5 :   Scenario Outline: Scenario#2
+                6 :     When <action> occurs
+                7 :
+                8 :    @etag1
+                9 :    Examples:
+                10:       | action | 
+                11: #     | act#1  |
+                12: #
+                13: #   Examples:
+                14: #     | action |
+                15: #     | act#3  |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Scenario#2' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            19,
+            10,
+        ];
+
+        yield 'feature with outline, Examples: line matches nothing' => [
+            // This is current behaviour, but it is slightly unexpected (and inconsistent with the behaviour of matching
+            // either the Outline, or the header of the table)
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                1: Feature: Some feature
+                2: 
+                3: #  Scenario Outline: Some scenario
+                4: #    When <action> occurs
+                5: #
+                6: #   @etag1
+                7: #   Examples:
+                8: #     | action | outcome |
+                9: #     | act#1  | out#1   |
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Some scenario' => false,
+                ],
+                stripLineNumbers: true,
+            ),
+            7,
         ];
     }
 

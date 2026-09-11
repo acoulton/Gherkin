@@ -293,6 +293,31 @@ class LineRangeFilterTest extends FilterTestCase
             5,
             6,
         ];
+
+        yield 'simple feature, range ends with "*"' => [
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                1 : Feature: Two scenarios
+                2 : #  Scenario: Scenario#1
+                3 : #    Given initial step
+                4 : #    When action occurs
+                5 : #    Then outcomes should be visible
+                6 : 
+                7 :   Scenario: Scenario#2
+                8 :     Given initial step
+                9 :     And another initial step
+                10:     When action occurs
+                11:     Then outcomes should be visible
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Scenario#1' => false,
+                    'Scenario#2' => true,
+                ],
+                stripLineNumbers: true,
+            ),
+            5,
+            '*',
+        ];
     }
 
     /**
@@ -421,6 +446,47 @@ class LineRangeFilterTest extends FilterTestCase
             ),
             25,
             26,
+        ];
+
+        yield 'feature with outline, range includes multiple partial tables' => [
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                1 : Feature: Long feature with outline
+                2 : #  Scenario: Scenario#1
+                3 : #    Given initial step
+                4 : #    When action occurs
+                5 : #    Then outcomes should be visible
+                6 : #
+                7 : #  Scenario: Scenario#2
+                8 : #    Given initial step
+                9 : #    And another initial step
+                10: #    When action occurs
+                11: #    Then outcomes should be visible
+                12: 
+                13:   Scenario Outline: Scenario#3
+                14:     When <action> occurs
+                15:     Then <outcome> should be visible
+                16: 
+                17:     @etag1
+                18:     Examples:
+                19:       | action | outcome |
+                20: #      | act#1  | out#1   |
+                21:       | act#2  | out#2   |
+                22: 
+                23:     @etag2
+                24:     Examples:
+                25:       | action | outcome |
+                26:       | act#3  | out#3   |
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Scenario#1' => false,
+                    'Scenario#2' => false,
+                    'Scenario#3' => true,
+                ],
+                stripLineNumbers: true,
+            ),
+            21,
+            '*',
         ];
     }
 

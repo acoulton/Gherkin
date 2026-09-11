@@ -33,15 +33,15 @@ abstract class FilterTestCase extends TestCase
         );
     }
 
-    final protected function parseFeature(string $feature): FeatureNode
+    final protected function parseFeature(string $feature, ?string $featureFilePath = null): FeatureNode
     {
-        return $this->getParser(GherkinCompatibilityMode::GHERKIN_32)->parse($feature)
+        return $this->getParser(GherkinCompatibilityMode::GHERKIN_32)->parse($feature, $featureFilePath)
             ?? throw new \InvalidArgumentException('Could not parse predefined test feature');
     }
 
-    final protected function assertFiltersFeatureAsExpected(FeatureFilterTestFixture $testcase, FeatureFilterInterface $filter): void
+    final protected function assertFiltersFeatureAsExpected(FeatureFilterTestFixture $testcase, FeatureFilterInterface $filter, ?string $featureFilePath = null): void
     {
-        $originalFeature = $this->parseFeature($testcase->originalFeature);
+        $originalFeature = $this->parseFeature($testcase->originalFeature, $featureFilePath);
 
         // First, assert that `isScenarioMatch` matches all scenarios within the feature as expected.
         // This also ensures that the original feature has been parsed to the expected list of scenarios (e.g. that
@@ -60,7 +60,7 @@ abstract class FilterTestCase extends TestCase
         $filteredFeature = $filter->filterFeature($originalFeature);
 
         $this->assertEquals(
-            $this->parseFeature($testcase->expectedEquivalentFeature),
+            $this->parseFeature($testcase->expectedEquivalentFeature, $featureFilePath),
             $filteredFeature,
             'Filtered feature should match the expected equivalent feature'
         );
