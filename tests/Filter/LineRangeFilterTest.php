@@ -331,39 +331,31 @@ class LineRangeFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #    Given initial step
-                4 : #    When action occurs
-                5 : #    Then outcomes should be visible
-                6 : # 
-                7 : #  Scenario: Scenario#2
-                8 : #    Given initial step
-                9 : #    And another initial step
-                10: #    When action occurs
-                11: #    Then outcomes should be visible
-                12:  
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16:  
-                17:     @etag1
-                18:     Examples:
-                19:       | action | outcome |
-                20:       | act#1  | out#1   |
-                21:       | act#2  | out#2   |
-                22:  
-                23: #    @etag2
-                24: #    Examples:
-                25: #      | action | outcome |
-                26: #      | act#3  | out#3   |
+                4 : # 
+                5 :  
+                6 :   Scenario Outline: Outline#1
+                7 :     When <action> occurs
+                8 :     Then <outcome> should be visible
+                9 :  
+                10:     @etag1
+                11:     Examples:
+                12:       | action | outcome |
+                13:       | act#1  | out#1   |
+                14:       | act#2  | out#2   |
+                15:  
+                16: #    @etag2
+                17: #    Examples:
+                18: #      | action | outcome |
+                19: #      | act#3  | out#3   |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Outline#1' => true,
                 ],
                 stripLineNumbers: true,
             ),
+            10,
             16,
-            21,
         ];
 
         yield 'feature with outline, range includes both tables' => [
@@ -372,39 +364,31 @@ class LineRangeFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #    Given initial step
-                4 : #    When action occurs
-                5 : #    Then outcomes should be visible
-                6 : #
-                7 : #  Scenario: Scenario#2
-                8 : #    Given initial step
-                9 : #    And another initial step
-                10: #    When action occurs
-                11: #    Then outcomes should be visible
-                12: 
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16: 
-                17:     @etag1
-                18:     Examples:
-                19:       | action | outcome |
-                20:       | act#1  | out#1   |
-                21:       | act#2  | out#2   |
-                22: 
-                23:     @etag2
-                24:     Examples:
-                25:       | action | outcome |
-                26:       | act#3  | out#3   |
+                4 : # 
+                5 :  
+                6 :   Scenario Outline: Outline#1
+                7 :     When <action> occurs
+                8 :     Then <outcome> should be visible
+                9 :  
+                10:     @etag1
+                11:     Examples:
+                12:       | action | outcome |
+                13:       | act#1  | out#1   |
+                14:       | act#2  | out#2   |
+                15:  
+                16:     @etag2
+                17:     Examples:
+                18:       | action | outcome |
+                19:       | act#3  | out#3   |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Outline#1' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            16,
-            26,
+            9,
+            19,
         ];
 
         yield 'feature with outline, range includes one table' => [
@@ -413,39 +397,31 @@ class LineRangeFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #    Given initial step
-                4 : #    When action occurs
-                5 : #    Then outcomes should be visible
-                6 : #
-                7 : #  Scenario: Scenario#2
-                8 : #    Given initial step
-                9 : #    And another initial step
-                10: #    When action occurs
-                11: #    Then outcomes should be visible
-                12: 
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16: 
-                17: #    @etag1
-                18: #    Examples:
-                19: #      | action | outcome |
-                20: #      | act#1  | out#1   |
-                21: #      | act#2  | out#2   |
-                22: 
-                23:     @etag2
-                24:     Examples:
-                25:       | action | outcome |
-                26:       | act#3  | out#3   |
+                4 : # 
+                5 :  
+                6 :   Scenario Outline: Outline#1
+                7 :     When <action> occurs
+                8 :     Then <outcome> should be visible
+                9 :  
+                10: #    @etag1
+                11: #    Examples:
+                12: #      | action | outcome |
+                13: #      | act#1  | out#1   |
+                14: #      | act#2  | out#2   |
+                15:  
+                16:     @etag2
+                17:     Examples:
+                18:       | action | outcome |
+                19:       | act#3  | out#3   |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Outline#1' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            25,
-            26,
+            18,
+            19,
         ];
 
         yield 'feature with outline, range includes multiple partial tables' => [
@@ -454,39 +430,64 @@ class LineRangeFilterTest extends FilterTestCase
                 1 : Feature: Long feature with outline
                 2 : #  Scenario: Scenario#1
                 3 : #    Given initial step
-                4 : #    When action occurs
-                5 : #    Then outcomes should be visible
-                6 : #
-                7 : #  Scenario: Scenario#2
-                8 : #    Given initial step
-                9 : #    And another initial step
-                10: #    When action occurs
-                11: #    Then outcomes should be visible
-                12: 
-                13:   Scenario Outline: Scenario#3
-                14:     When <action> occurs
-                15:     Then <outcome> should be visible
-                16: 
-                17:     @etag1
-                18:     Examples:
-                19:       | action | outcome |
-                20: #      | act#1  | out#1   |
-                21:       | act#2  | out#2   |
-                22: 
-                23:     @etag2
-                24:     Examples:
-                25:       | action | outcome |
-                26:       | act#3  | out#3   |
+                4 : # 
+                5 :  
+                6 :   Scenario Outline: Outline#1
+                7 :     When <action> occurs
+                8 :     Then <outcome> should be visible
+                9 :  
+                10:     @etag1
+                11:     Examples:
+                12:       | action | outcome |
+                13: #     | act#1  | out#1   |
+                14:       | act#2  | out#2   |
+                15:  
+                16:     @etag2
+                17:     Examples:
+                18:       | action | outcome |
+                19:       | act#3  | out#3   |
                 GHERKIN,
                 expectScenarioMatches: [
                     'Scenario#1' => false,
-                    'Scenario#2' => false,
-                    'Scenario#3' => true,
+                    'Outline#1' => true,
                 ],
                 stripLineNumbers: true,
             ),
-            21,
+            14,
             '*',
+        ];
+
+        yield 'feature with outline, range is one table row' => [
+            FeatureFilterTestFixture::fromCommentedExpectation(
+                <<<'GHERKIN'
+                1 : Feature: Long feature with outline
+                2 : #  Scenario: Scenario#1
+                3 : #    Given initial step
+                4 : # 
+                5 :  
+                6 :   Scenario Outline: Outline#1
+                7 :     When <action> occurs
+                8 :     Then <outcome> should be visible
+                9 :   
+                10:      @etag1
+                11:      Examples:
+                12:        | action | outcome |
+                13:        | act#1  | out#1   |
+                14: #      | act#2  | out#2   |
+                15: # 
+                16: #    @etag2
+                17: #    Examples:
+                18: #      | action | outcome |
+                19: #      | act#3  | out#3   |
+                GHERKIN,
+                expectScenarioMatches: [
+                    'Scenario#1' => false,
+                    'Outline#1' => true,
+                ],
+                stripLineNumbers: true,
+            ),
+            13,
+            13,
         ];
     }
 
@@ -499,36 +500,73 @@ class LineRangeFilterTest extends FilterTestCase
         $this->assertFiltersFeatureAsExpected($testcase, new LineRangeFilter($filterMinLine, $filterMaxLine));
     }
 
-    public function testFilterFeatureLeavesEmptyOutlineIfOnlyOutlineInRange(): void
+    /**
+     * @return iterable<string, array{string, int, int}>
+     */
+    public static function providerFeaturesThatLeaveEmptyOutline(): iterable
     {
-        // Edge case: If the range includes the Outline: line but none of the Examples: tables, the filtered feature
-        // will have an empty Outline. We can't prove this with the normal test, because the parser converts an empty
-        // Outline to a Scenario node.
-        $feature = $this->parseFeature(
+        $fixture = FeatureFilterTestFixture::fromCommentedExpectation(
             <<<'GHERKIN'
-            Feature: Long feature with outline
-              Scenario: Scenario#1
-                Given initial step
-                When action occurs
-                Then outcomes should be visible
-                
-              Scenario: Scenario#2
-                Given initial step
-                And another initial step
-                When action occurs
-                Then outcomes should be visible
-
-              Scenario Outline: Scenario#3
-                When <action> occurs
-                Then <outcome> should be visible
-                
-                Examples: 
-                  | action | outcome  |
-                  | click  | something|
-            GHERKIN
+            1 : Feature: Long feature with outline
+            2 :   Scenario: Scenario#1
+            3 :     Given initial step
+            4 :  
+            5 :  
+            6 :   Scenario Outline: Outline#1
+            7 :     When <action> occurs
+            8 :     Then <outcome> should be visible
+            9 :   
+            10:      @etag1
+            11:      Examples: First set
+            12:        | action | outcome |
+            13:        | act#1  | out#1   |
+            14:        | act#2  | out#2   |
+            15:  
+            16:     @etag2
+            17:      Examples: Second set
+            18:        | action | outcome |
+            19:        | act#3  | out#3   |
+            GHERKIN,
+            expectScenarioMatches: [
+                'Scenario#1' => false,
+                'Outline#1' => true,
+            ],
+            stripLineNumbers: true,
         );
 
-        $filter = new LineRangeFilter(12, 14);
+        yield 'line range includes Outline: but no tables' => [
+            $fixture->originalFeature,
+            6,
+            9,
+        ];
+
+        yield 'line range includes Outline: and Examples: but no table rows' => [
+            $fixture->originalFeature,
+            6,
+            11,
+        ];
+
+        yield 'line range includes Outline: through to table header, but no table rows' => [
+            // This is inconsistent with LineFilter, where matching the table header row keeps the Outline
+            // with an empty table (containing only the header row).
+            $fixture->originalFeature,
+            6,
+            12,
+        ];
+    }
+
+    #[DataProvider('providerFeaturesThatLeaveEmptyOutline')]
+    public function testFilterFeatureLeavesEmptyOutlineIfNoTableRowsInRange(
+        string $originalFeature,
+        int $filterMinLine,
+        int $filterMaxLine,
+    ): void {
+        // Edge case: If the range includes the Outline: line but none of the Examples: table rows, the filtered feature
+        // will have an empty Outline. We can't prove this with the normal test, because the parser converts an empty
+        // Outline to a Scenario node.
+        $feature = $this->parseFeature($originalFeature);
+
+        $filter = new LineRangeFilter($filterMinLine, $filterMaxLine);
         $filtered = $filter->filterFeature($feature);
 
         $this->assertTrue($filtered->hasScenarios(), 'Feature still has scenarios');
