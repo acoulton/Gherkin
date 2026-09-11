@@ -11,6 +11,7 @@
 namespace Behat\Gherkin\Filter;
 
 use Behat\Gherkin\Node\FeatureNode;
+use Behat\Gherkin\Node\RuleNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 
 /**
@@ -27,12 +28,44 @@ abstract class ComplexFilter implements ComplexFilterInterface
      */
     public function filterFeature(FeatureNode $feature)
     {
-        $scenarios = $feature->getScenarios();
-        $filteredScenarios = array_filter(
-            $scenarios,
-            fn (ScenarioInterface $scenario) => $this->isScenarioMatch($feature, $scenario)
-        );
+        $originalChildren = [];
+        $filteredChildren = [];
 
-        return $scenarios === $filteredScenarios ? $feature : $feature->withScenarios($filteredScenarios);
+        foreach ($feature->getExecutableChildren() as $scenarioOrRule) {
+            $originalChildren[] = $scenarioOrRule;
+
+            if ($scenarioOrRule instanceof ScenarioInterface) {
+                if ($this->isScenarioMatch($feature, $scenarioOrRule)) {
+                    $filteredChildren[] = $scenarioOrRule;
+                }
+            } else {
+                $filteredRule = $this->filterRule($feature, $scenarioOrRule);
+                if ($filteredRule !== false) {
+                    $filteredChildren[] = $filteredRule;
+                }
+            }
+        }
+
+        return $originalChildren === $filteredChildren ? $feature : $feature->withScenarios($filteredChildren);
+    }
+
+    private function filterRule(FeatureNode $feature, RuleNode $rule): RuleNode|false
+    {
+        $filteredChildren = array_values(array_filter(
+            $rule->getExecutableChildren(),
+            fn (ScenarioInterface $scenario) => $this->isScenarioMatch($feature, $scenario)
+        ));
+
+        if ($filteredChildren === []) {
+            // Drop the rule, no scenarios match
+            return false;
+        }
+
+        // @todo do we want a `->withScenarios` or `->withExecutableChildren` rather than always merging background like this?
+        if ($rule->hasBackground()) {
+            array_unshift($filteredChildren, $rule->getBackground());
+        }
+
+        return $rule->withChildren($filteredChildren);
     }
 }
