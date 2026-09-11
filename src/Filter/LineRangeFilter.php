@@ -51,8 +51,7 @@ class LineRangeFilter implements FilterInterface
      */
     public function isFeatureMatch(FeatureNode $feature)
     {
-        return $this->filterMinLine <= $feature->getLine()
-            && $this->filterMaxLine >= $feature->getLine();
+        return $this->isInLineRange($feature->getLine());
     }
 
     /**
@@ -64,14 +63,14 @@ class LineRangeFilter implements FilterInterface
      */
     public function isScenarioMatch(ScenarioInterface $scenario)
     {
-        if ($this->filterMinLine <= $scenario->getLine() && $this->filterMaxLine >= $scenario->getLine()) {
+        if ($this->isInLineRange($scenario->getLine())) {
             return true;
         }
 
         if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
             foreach ($scenario->getExampleTables() as $table) {
                 foreach ($table->getLines() as $line) {
-                    if ($this->filterMinLine <= $line && $this->filterMaxLine >= $line) {
+                    if ($this->isInLineRange($line)) {
                         return true;
                     }
                 }
@@ -106,7 +105,7 @@ class LineRangeFilter implements FilterInterface
                     unset($table[$lines[0]]);
 
                     foreach ($table as $line => $row) {
-                        if ($this->filterMinLine <= $line && $this->filterMaxLine >= $line) {
+                        if ($this->isInLineRange($line)) {
                             $filteredTable[$line] = $row;
                         }
                     }
@@ -123,5 +122,10 @@ class LineRangeFilter implements FilterInterface
         }
 
         return $feature->withScenarios($scenarios);
+    }
+
+    private function isInLineRange(int $line): bool
+    {
+        return $this->filterMinLine <= $line && $this->filterMaxLine >= $line;
     }
 }
