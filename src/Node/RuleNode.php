@@ -10,9 +10,22 @@
 
 namespace Behat\Gherkin\Node;
 
+use WeakMap;
+
 class RuleNode implements KeywordNodeInterface, DescribableNodeInterface, TaggedNodeInterface
 {
     use TaggedNodeTrait;
+
+    /**
+     * @var WeakMap<ScenarioInterface, RuleNode>
+     */
+    private static WeakMap $ruleParentMap;
+
+    public static function resolveParentRule(ScenarioInterface $scenario): ?RuleNode
+    {
+        // @todo: Resolve if the scenario is a hoisted copy of the actual scenario
+        return self::$ruleParentMap[$scenario] ?? null;
+    }
 
     /**
      * @param list<string> $tags
@@ -26,6 +39,13 @@ class RuleNode implements KeywordNodeInterface, DescribableNodeInterface, Tagged
         private readonly string $keyword,
         private readonly int $line,
     ) {
+        self::$ruleParentMap ??= new WeakMap();
+        foreach ($this->children as $child) {
+            // @todo throw if scenario has already been registered as a child of a different rule
+            if ($child instanceof ScenarioInterface) {
+                self::$ruleParentMap[$child] = $this;
+            }
+        }
     }
 
     /**

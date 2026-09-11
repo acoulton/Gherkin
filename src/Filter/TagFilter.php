@@ -50,10 +50,12 @@ class TagFilter extends ComplexFilter
             return false;
         }
 
+        $tags = [...$feature->getTags(), ...$scenario->getTags(), ...($rule?->getTags() ?? [])];
+
         if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
             $exampleTables = [];
             foreach ($scenario->getExampleTables() as $exampleTable) {
-                if ($this->isTagsMatchCondition([...$feature->getTags(), ...$scenario->getTags(), ...$exampleTable->getTags()])) {
+                if ($this->isTagsMatchCondition([...$tags, ...$exampleTable->getTags()])) {
                     $exampleTables[] = $exampleTable;
                 }
             }
@@ -86,9 +88,19 @@ class TagFilter extends ComplexFilter
      */
     public function isScenarioMatch(FeatureNode $feature, ScenarioInterface $scenario)
     {
+        // We have to get the parentRule from the global registry here, because for BC we have to support cases where:
+        // - this method is called from outside our main `filterFeature` loop (e.g. to check a tagged hook in Behat)
+        // - an end-user has extended `TagFilter` and overridden this method instead of customising `filterFeature`
+        //
+        // For the same reason, we can't refactor this method / filterFeature to avoid iterating the tables twice -
+        // because that would break end-user assumptions about the relationship between these two methods if they
+        // have extended either method.
+        $parentRule = RuleNode::resolveParentRule($scenario);
+        $tags = [...$feature->getTags(), ...$scenario->getTags(), ...($parentRule?->getTags() ?? [])];
+
         if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
             foreach ($scenario->getExampleTables() as $example) {
-                if ($this->isTagsMatchCondition(array_merge($feature->getTags(), $scenario->getTags(), $example->getTags()))) {
+                if ($this->isTagsMatchCondition([...$tags, ...$example->getTags()])) {
                     return true;
                 }
             }
@@ -96,7 +108,7 @@ class TagFilter extends ComplexFilter
             return false;
         }
 
-        return $this->isTagsMatchCondition(array_merge($feature->getTags(), $scenario->getTags()));
+        return $this->isTagsMatchCondition($tags);
     }
 
     /**
