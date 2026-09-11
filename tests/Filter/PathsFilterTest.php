@@ -16,6 +16,8 @@ use Behat\Gherkin\Node\ScenarioNode;
 
 class PathsFilterTest extends FilterTestCase
 {
+    // @TODO: TEST filterFeature
+
     public function testIsFeatureMatchFilter(): void
     {
         $feature = new FeatureNode(null, null, [], null, [], '', '', __FILE__, 1);
