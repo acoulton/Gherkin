@@ -12,6 +12,7 @@ namespace Behat\Gherkin\Filter;
 
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\OutlineNode;
+use Behat\Gherkin\Node\RuleNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 
 /**
@@ -43,35 +44,24 @@ class TagFilter extends ComplexFilter
         $this->filterString = $this->filterMatcher->getNormalisedFilterString();
     }
 
-    /**
-     * Filters feature according to the filter.
-     *
-     * @return FeatureNode
-     */
-    public function filterFeature(FeatureNode $feature)
+    protected function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false
     {
-        $scenarios = [];
-        foreach ($feature->getScenarios() as $scenario) {
-            if (!$this->isScenarioMatch($feature, $scenario)) {
-                continue;
-            }
-
-            if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
-                $exampleTables = [];
-
-                foreach ($scenario->getExampleTables() as $exampleTable) {
-                    if ($this->isTagsMatchCondition(array_merge($feature->getTags(), $scenario->getTags(), $exampleTable->getTags()))) {
-                        $exampleTables[] = $exampleTable;
-                    }
-                }
-
-                $scenario = $scenario->withTables($exampleTables);
-            }
-
-            $scenarios[] = $scenario;
+        if (!$this->isScenarioMatch($feature, $scenario)) {
+            return false;
         }
 
-        return $feature->withScenarios($scenarios);
+        if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
+            $exampleTables = [];
+            foreach ($scenario->getExampleTables() as $exampleTable) {
+                if ($this->isTagsMatchCondition([...$feature->getTags(), ...$scenario->getTags(), ...$exampleTable->getTags()])) {
+                    $exampleTables[] = $exampleTable;
+                }
+            }
+
+            return $scenario->withTables($exampleTables);
+        }
+
+        return $scenario;
     }
 
     /**

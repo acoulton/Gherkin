@@ -34,27 +34,31 @@ abstract class ComplexFilter implements ComplexFilterInterface
         foreach ($feature->getExecutableChildren() as $scenarioOrRule) {
             $originalChildren[] = $scenarioOrRule;
 
-            if ($scenarioOrRule instanceof ScenarioInterface) {
-                if ($this->isScenarioMatch($feature, $scenarioOrRule)) {
-                    $filteredChildren[] = $scenarioOrRule;
-                }
-            } else {
-                $filteredRule = $this->filterRule($feature, $scenarioOrRule);
-                if ($filteredRule !== false) {
-                    $filteredChildren[] = $filteredRule;
-                }
+            $filteredChild = match (true) {
+                $scenarioOrRule instanceof ScenarioInterface => $this->filterScenario($feature, null, $scenarioOrRule),
+                $scenarioOrRule instanceof RuleNode => $this->filterRule($feature, $scenarioOrRule),
+                default => throw new \LogicException('Unexpected child type ' . $scenarioOrRule::class),
+            };
+
+            if ($filteredChild !== false) {
+                $filteredChildren[] = $filteredChild;
             }
         }
 
         return $originalChildren === $filteredChildren ? $feature : $feature->withScenarios($filteredChildren);
     }
 
+    protected function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false
+    {
+        return $this->isScenarioMatch($feature, $scenario) ? $scenario : false;
+    }
+
     private function filterRule(FeatureNode $feature, RuleNode $rule): RuleNode|false
     {
-        $filteredChildren = array_values(array_filter(
+        $filteredChildren = array_values(array_filter(array_map(
+            fn (ScenarioInterface $scenario) => $this->filterScenario($feature, $rule, $scenario),
             $rule->getExecutableChildren(),
-            fn (ScenarioInterface $scenario) => $this->isScenarioMatch($feature, $scenario)
-        ));
+        )));
 
         if ($filteredChildren === []) {
             // Drop the rule, no scenarios match
