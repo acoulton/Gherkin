@@ -12,6 +12,7 @@ namespace Behat\Gherkin\Filter;
 
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\OutlineNode;
+use Behat\Gherkin\Node\RuleNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 
 /**
@@ -61,6 +62,11 @@ class LineFilter implements FilterInterface
             return true;
         }
 
+        $parentRule = RuleNode::resolveParentRule($scenario);
+        if ($this->filterLine === $parentRule?->getLine()) {
+            return true;
+        }
+
         if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
             foreach ($scenario->getExampleTables() as $table) {
                 if (in_array($this->filterLine, $table->getLines())) {
@@ -72,39 +78,71 @@ class LineFilter implements FilterInterface
         return false;
     }
 
-    /**
-     * Filters feature according to the filter and returns new one.
-     *
-     * @return FeatureNode
-     */
     public function filterFeature(FeatureNode $feature)
     {
-        $scenarios = [];
-        foreach ($feature->getScenarios() as $scenario) {
-            if (!$this->isScenarioMatch($scenario)) {
-                continue;
+        $originalChildren = [];
+        $filteredChildren = [];
+
+        foreach ($feature->getExecutableChildren() as $scenarioOrRule) {
+            $originalChildren[] = $scenarioOrRule;
+
+            $filteredChild = match (true) {
+                $scenarioOrRule instanceof ScenarioInterface => $this->filterScenario($feature, null, $scenarioOrRule),
+                $scenarioOrRule instanceof RuleNode => $this->filterRule($feature, $scenarioOrRule),
+                default => throw new \LogicException('Unexpected child type ' . $scenarioOrRule::class),
+            };
+
+            if ($filteredChild !== false) {
+                $filteredChildren[] = $filteredChild;
             }
-
-            if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
-                foreach ($scenario->getExampleTables() as $exampleTable) {
-                    $table = $exampleTable->getTable();
-                    $lines = array_keys($table);
-
-                    if (in_array($this->filterLine, $lines)) {
-                        $filteredTable = [$lines[0] => $table[$lines[0]]];
-
-                        if ($lines[0] !== $this->filterLine) {
-                            $filteredTable[$this->filterLine] = $table[$this->filterLine];
-                        }
-
-                        $scenario = $scenario->withTables([$exampleTable->withTable($filteredTable)]);
-                    }
-                }
-            }
-
-            $scenarios[] = $scenario;
         }
 
-        return $feature->withScenarios($scenarios);
+        return $originalChildren === $filteredChildren ? $feature : $feature->withScenarios($filteredChildren);
+    }
+
+    private function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false
+    {
+        if (!$this->isScenarioMatch($scenario)) {
+            return false;
+        }
+
+        if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
+            foreach ($scenario->getExampleTables() as $exampleTable) {
+                $table = $exampleTable->getTable();
+                $lines = array_keys($table);
+
+                if (in_array($this->filterLine, $lines)) {
+                    $filteredTable = [$lines[0] => $table[$lines[0]]];
+
+                    if ($lines[0] !== $this->filterLine) {
+                        $filteredTable[$this->filterLine] = $table[$this->filterLine];
+                    }
+
+                    return $scenario->withTables([$exampleTable->withTable($filteredTable)]);
+                }
+            }
+        }
+
+        return $scenario;
+    }
+
+    private function filterRule(FeatureNode $feature, RuleNode $rule): RuleNode|false
+    {
+        $filteredChildren = array_values(array_filter(array_map(
+            fn (ScenarioInterface $scenario) => $this->filterScenario($feature, $rule, $scenario),
+            $rule->getExecutableChildren(),
+        )));
+
+        if ($filteredChildren === []) {
+            // Drop the rule, no scenarios match
+            return false;
+        }
+
+        // @todo do we want a `->withScenarios` or `->withExecutableChildren` rather than always merging background like this?
+        if ($rule->hasBackground()) {
+            array_unshift($filteredChildren, $rule->getBackground());
+        }
+
+        return $rule->withChildren($filteredChildren);
     }
 }
