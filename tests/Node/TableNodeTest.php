@@ -314,7 +314,9 @@ class TableNodeTest extends TestCase
             313 => ['32', '3antono', '3pa$sword'],
         ]);
 
+        /* @phpstan-ignore-next-line method.deprecated */
         $table->mergeRowsFromTable($new);
+        /* @phpstan-ignore-next-line method.deprecated */
         $table->mergeRowsFromTable($new2);
 
         $this->assertEquals(['id', 'username', 'password'], $table->getRow(0));
@@ -339,6 +341,7 @@ class TableNodeTest extends TestCase
             new NodeException('Tables have different structure. Cannot merge one into another')
         );
 
+        /* @phpstan-ignore-next-line method.deprecated */
         $table->mergeRowsFromTable($new);
     }
 
@@ -371,6 +374,7 @@ class TableNodeTest extends TestCase
             new NodeException('Tables have different structure. Cannot merge one into another')
         );
 
+        /* @phpstan-ignore-next-line method.deprecated */
         $table->mergeRowsFromTable($new);
     }
 
@@ -390,6 +394,7 @@ class TableNodeTest extends TestCase
             new NodeException('Tables have different structure. Cannot merge one into another')
         );
 
+        /* @phpstan-ignore-next-line method.deprecated */
         $table->mergeRowsFromTable($new);
     }
 }

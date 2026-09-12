@@ -31,11 +31,13 @@ final class CucumberNDJsonAstLoaderTest extends TestCase
 
     protected function setUp(): void
     {
+        /* @phpstan-ignore-next-line method.deprecated */
         $this->loader = new CucumberNDJsonAstLoader();
     }
 
     public function testStringResourcesAreSupported(): void
     {
+        /* @phpstan-ignore-next-line method.deprecated */
         $this->assertTrue($this->loader->supports('a string'));
     }
 
