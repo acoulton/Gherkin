@@ -941,7 +941,7 @@ class TagFilterTest extends FilterTestCase
                   | anything  | 
             GHERKIN,
         );
-        $outline = $feature->getScenarios()[0];
+        $outline = $feature->getExecutableChildren()[0];
         $this->assertInstanceOf(OutlineNode::class, $outline);
         $example = $outline->getExamples()[0];
 
