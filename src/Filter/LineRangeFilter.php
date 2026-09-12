@@ -20,7 +20,7 @@ use Behat\Gherkin\Node\ScenarioInterface;
  *
  * @author Fabian Kiss <headrevision@gmail.com>
  */
-class LineRangeFilter implements FilterInterface
+class LineRangeFilter extends SimpleFilter
 {
     /**
      * @var int
@@ -41,6 +41,9 @@ class LineRangeFilter implements FilterInterface
     {
         $this->filterMinLine = (int) $filterMinLine;
         $this->filterMaxLine = $filterMaxLine === '*' ? PHP_INT_MAX : (int) $filterMaxLine;
+
+        // Always filter the individual children, don't check the feature itself
+        parent::__construct(skipFilteringChildrenIfFeatureMatches: false);
     }
 
     /**
@@ -81,34 +84,7 @@ class LineRangeFilter implements FilterInterface
         return false;
     }
 
-    /**
-     * Filters feature according to the filter.
-     *
-     * @return FeatureNode
-     */
-    public function filterFeature(FeatureNode $feature)
-    {
-        $originalChildren = [];
-        $filteredChildren = [];
-
-        foreach ($feature->getExecutableChildren() as $scenarioOrRule) {
-            $originalChildren[] = $scenarioOrRule;
-
-            $filteredChild = match (true) {
-                $scenarioOrRule instanceof ScenarioInterface => $this->filterScenario($feature, null, $scenarioOrRule),
-                $scenarioOrRule instanceof RuleNode => $this->filterRule($feature, $scenarioOrRule),
-                default => throw new \LogicException('Unexpected child type ' . $scenarioOrRule::class),
-            };
-
-            if ($filteredChild !== false) {
-                $filteredChildren[] = $filteredChild;
-            }
-        }
-
-        return $originalChildren === $filteredChildren ? $feature : $feature->withScenarios($filteredChildren);
-    }
-
-    private function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false
+    protected function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false
     {
         if (!$this->isScenarioMatch($scenario)) {
             return false;
@@ -140,26 +116,6 @@ class LineRangeFilter implements FilterInterface
         }
 
         return $scenario;
-    }
-
-    private function filterRule(FeatureNode $feature, RuleNode $rule): RuleNode|false
-    {
-        $filteredChildren = array_values(array_filter(array_map(
-            fn (ScenarioInterface $scenario) => $this->filterScenario($feature, $rule, $scenario),
-            $rule->getExecutableChildren(),
-        )));
-
-        if ($filteredChildren === []) {
-            // Drop the rule, no scenarios match
-            return false;
-        }
-
-        // @todo do we want a `->withScenarios` or `->withExecutableChildren` rather than always merging background like this?
-        if ($rule->hasBackground()) {
-            array_unshift($filteredChildren, $rule->getBackground());
-        }
-
-        return $rule->withChildren($filteredChildren);
     }
 
     private function isInLineRange(int $line): bool

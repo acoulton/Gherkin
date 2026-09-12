@@ -42,6 +42,9 @@ class TagFilter extends ComplexFilter
         // This can all be removed in the next major if we make `filterString` private and/or readonly and remove the
         // normalisation of deprecated syntax.
         $this->filterString = $this->filterMatcher->getNormalisedFilterString();
+
+        // Always filter the individual children, don't check the feature itself
+        parent::__construct(skipFilteringChildrenIfFeatureMatches: false);
     }
 
     protected function filterScenario(FeatureNode $feature, ?RuleNode $rule, ScenarioInterface $scenario): ScenarioInterface|false

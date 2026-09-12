@@ -30,6 +30,9 @@ class NameFilter extends SimpleFilter
     public function __construct(string $filterString)
     {
         $this->filterString = trim($filterString);
+
+        // If the feature name matches, we include it unchanged without any filtering of children
+        parent::__construct(skipFilteringChildrenIfFeatureMatches: true);
     }
 
     /**
